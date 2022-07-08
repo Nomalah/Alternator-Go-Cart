@@ -1,16 +1,7 @@
 #include "pins.h"
 #include <LiquidCrystal.h>
 
-int eGearStat;
-int voltVal;
-int current1;
-int current2;
-int M_MCU;
-// int throttleStat;
-// int eBrakeStat;
-// int rearBrakeStat;
-
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+LiquidCrystal lcd(38, 36, 35, 27, 25, 21);
 
 void setup() {
     pinMode(RPMPin, INPUT);
@@ -21,12 +12,29 @@ void setup() {
 }
 
 void loop() {
-    eGearStat = analogRead(eGearPin);
-    voltVal = analogRead(voltPin);
-    current1 = analogRead(currentInPin1);
-    current2 = analogRead(currentInPin2);
-    M_MCU = analogRead(serIn);
-    // throttleStat = analogRead(throttlePin);
-    // eBrakeStat = analogRead(eBrakePin);
-    // rearBrakeStat = analogRead(rearBrakePin);
+    int eGearStat = analogRead(eGearPin);
+    // small note, likely will have to do some math with voltVal to get the correct voltage reading
+    int voltVal = analogRead(voltPin);
+    int current1 = analogRead(currentInPin1);
+    int current2 = analogRead(currentInPin2);
+    int M_MCU = analogRead(serIn);
+    // int throttleStat = analogRead(throttlePin);
+    // int eBrakeStat = analogRead(eBrakePin);
+    // int rearBrakeStat = analogRead(rearBrakePin);
+}
+
+void rotor() {
+
+}
+
+void RPMSense() {
+
+}
+
+void eGearSend() {
+
+}
+
+void current() {
+
 }
