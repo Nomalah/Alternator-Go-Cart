@@ -1,14 +1,14 @@
 const int eGearPin = 36;
 const int RPMPin = 22;
 const int voltPin = 39;
-const int reversePin = 1;
+const int reversePin = 13;
 const int currentInPin1 = 34;
 const int currentInPin2 = 35;
 const int currentOutPin1 = 2;
 const int currentOutPin2 = 4;
 const int currentOutPin3 = 5;
-const int serIn = 32;
-const int serOut = 33;
+const int serIn = 3;
+const int serOut = 1;
 const int rotorPin1 = 25;
 const int rotorPin2 = 26;
 const int throttlePin = 27;
