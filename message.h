@@ -8,4 +8,4 @@ struct message { // 3-bytes
 };
 #pragma pack(pop)
 
-static_assert(sizeof(message) == 3);
+static_assert(sizeof(message) == 3, "message is not the size expected");
