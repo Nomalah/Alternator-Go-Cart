@@ -1,10 +1,14 @@
 #include "pins.h"
-#include "message.h"
+#include "../message.h"
 #include <LiquidCrystal.h>
 
-LiquidCrystal lcd(19, 23, 18, 17, 16, 15);
+LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 
-bool reverseStat = false;
+#define EBRAKE_THRESHOLD 0
+
+byte readAnalogESP(int pin){
+    return map(analogRead(pin), 0, 4095, 0, 255);
+}
 
 void setup() {
     pinMode(RPMPin, INPUT);
@@ -19,30 +23,40 @@ void setup() {
 
 void loop() {
     int eGearStat = analogRead(eGearPin);
-    // small note, likely will have to do some math with voltVal to get the correct voltage reading
+    // small note, likely will have to do some math with refVolt to get the correct voltage reading
     int refVolt = analogRead(voltPin);
     int current1 = analogRead(currentInPin1);
     int current2 = analogRead(currentInPin2);
-    int M_MCU = analogRead(serIn);
-    int throttleStat = analogRead(throttlePin);
-    int eBrakeStat = analogRead(eBrakePin);
+    int throttleStat = readAnalogESP(throttlePin);
+    int eBrakeStat = readAnalogESP(eBrakePin);
 
     message msg;
 
-    if (digitalRead(rearBrakePin) == LOW){
-        msg.reverse = reverse(digitalRead(reversePin));
-        msg.ebrake = eBrake(eBrakeStat);
-        msg.throttle = throttle(eBrakeStat, throttleStat);
-    }
-    else {
-      msg.reverse = false;
-      msg.ebrake = false;
-      msg.throttle = 0;
+    if (digitalRead(rearBrakePin) == HIGH) {
+        Serial.println("Rear brake engaged");
+        msg.reverse = false;
+        msg.ebrake = false;
+        msg.throttle = 0;
+    } else if (eBrakeStat > EBRAKE_THRESHOLD) {
+        Serial.println("E-Brake Engaged");
+        msg.reverse = false;
+        msg.ebrake = true;
+        msg.throttle = eBrakeStat;
+    } else {
+        Serial.println("Normal operation");
+        msg.reverse = digitalRead(reversePin) == HIGH;
+        msg.ebrake = false;
+        msg.throttle = throttleStat;
     }
     Serial.println(msg.reverse);
     Serial.println(msg.ebrake);
     Serial.println(int(msg.throttle));
 
+    // Send msg to M-MCU
+    Serial.write((byte*)(&msg), sizeof(message));
+
+    // Print info on LCD Display
+    lcd.clear();
     lcd.print("RPM:");
     lcd.setCursor(4, 0);
     lcd.print(RPMSense(digitalRead(RPMPin)));
@@ -57,7 +71,7 @@ void loop() {
     lcd.setCursor(9, 1);
     lcd.print("BV:");
     lcd.setCursor(12, 1);
-    lcd.print(1234);
+    lcd.print(refVolt);
     Serial.println(" ");
     delay(500);
 }
@@ -79,31 +93,17 @@ void current() {
 }
 
 bool reverse(int val) {
-    bool status = false;
-    if (val == LOW) {
-        status = false;
-    }
-    else {
-        status = true;
-    }
-    return status;
+    return val == HIGH;
 }
 
 bool eBrake(int val) {
-    bool status = false;
-    if (val == LOW) {
-        status = false;
-    }
-    else {
-        status = true;
-    }
-    return status;
+    return val == HIGH;
 }
 
 char throttle(int eb, int val) {
     if (eb == 0) {
         val = val;
-    } 
+    }
     else {
         val = 0;
     }
