@@ -21,9 +21,7 @@ const int rearBrakePin = 35;
 // placeholder pins
 const int currentInPin1 = 34;
 const int currentInPin2 = 35;
-const int currentOutPin1 = 2;
-const int currentOutPin2 = 4;
-const int currentOutPin3 = 5;
+const int currentOutPins[3] = {2, 4, 5};
 const int rotorPin1 = 25;
 const int rotorPin2 = 26;
 

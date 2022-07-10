@@ -15,9 +15,9 @@ void setup() {
     pinMode(RPMPin, INPUT);
     pinMode(reversePin, INPUT);
     pinMode(rearBrakePin, INPUT);
-    pinMode(currentOutPin1, OUTPUT);
-    pinMode(currentOutPin2, OUTPUT);
-    pinMode(currentOutPin3, OUTPUT);
+    pinMode(currentOutPins[0], OUTPUT);
+    pinMode(currentOutPins[1], OUTPUT);
+    pinMode(currentOutPins[2], OUTPUT);
     pinMode(rotorPin1, OUTPUT);
     pinMode(rotorPin2, OUTPUT);
     // pinMode(lights, OUTPUT);
@@ -29,8 +29,6 @@ void loop() {
     int eGearStat = analogRead(eGearPin);
     // small note, likely will have to do some math with refVolt to get the correct voltage reading
     int refVolt = analogRead(voltPin);
-    int current1 = analogRead(currentInPin1);
-    int current2 = analogRead(currentInPin2);
     int throttleStat = readAnalogESP(throttlePin);
     int eBrakeStat = readAnalogESP(eBrakePin);
 
@@ -61,6 +59,9 @@ void loop() {
 
     // Send msg to M-MCU
     Serial.write((byte*)(&msg), sizeof(message));
+
+    // Current sensing
+    Serial.println(current());
 
     // Print info on LCD
     lcd.clear();
@@ -118,8 +119,23 @@ void eGear(int val) {
     // information about the volts it should run on rotor
 }
 
-void current() {
-    // measures the amount of current from the 6 phase drivers & rotor drivers
+int current() {
+    int current1 = analogRead(currentInPin1);
+    int current2 = analogRead(currentInPin2);
+    for (byte pin=0; pin<=7; pin++) {
+        selectMuxPin(pin);
+        int inputValue = current1;
+    }
+}
+
+void selectMuxPin(byte pin)
+{
+    for (int i=0; i<3; i++){
+        if (pin & (1<<i))
+            digitalWrite(currentOutPins[i], HIGH);
+        else
+            digitalWrite(currentOutPins[i], LOW);
+    }
 }
 
 bool reverse(int val) {
