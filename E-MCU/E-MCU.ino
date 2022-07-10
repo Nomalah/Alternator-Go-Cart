@@ -5,6 +5,7 @@
 LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 
 #define EBRAKE_THRESHOLD 0
+#define HALL_THRESHOLD 100.0
 
 byte readAnalogESP(int pin){
     return map(analogRead(pin), 0, 4095, 0, 255);
@@ -17,6 +18,9 @@ void setup() {
     pinMode(currentOutPin1, OUTPUT);
     pinMode(currentOutPin2, OUTPUT);
     pinMode(currentOutPin3, OUTPUT);
+    pinMode(rotorPin1, OUTPUT);
+    pinMode(rotorPin2, OUTPUT);
+    // pinMode(lights, OUTPUT);
     lcd.begin(16, 2);
     Serial.begin(115200);
 }
@@ -32,11 +36,14 @@ void loop() {
 
     message msg;
 
+    // digitalWrite(lights, LOW);
+
     if (digitalRead(rearBrakePin) == HIGH) {
         Serial.println("Rear brake engaged");
         msg.reverse = false;
         msg.ebrake = false;
         msg.throttle = 0;
+        // digitalWrite(lights, HIGH);
     } else if (eBrakeStat > EBRAKE_THRESHOLD) {
         Serial.println("E-Brake Engaged");
         msg.reverse = false;
@@ -80,8 +87,29 @@ void rotor() {
     // runs the rotor
 }
 
-int RPMSense(int value) {
-    // display the RPM of the motor
+int RPMSense(int val) {
+    float hall_count = 1.0;
+    float start = micros();
+    bool on_state = false;
+    while(true){
+        if (val == LOW){
+            if (on_state==false){
+                on_state = true;
+                hall_count+=1.0;
+            }
+        } 
+        else{
+            on_state = false;
+        }
+        if (hall_count>=HALL_THRESHOLD){
+            break;
+        }
+    }
+    float end_time = micros();
+    float time_passed = ((end_time-start)/1000000.0);
+    float rpm_val = (hall_count/time_passed)*60.0;
+    int RPM = int(rpm_val);
+    return RPM;
 }
 
 void eGear(int val) {
