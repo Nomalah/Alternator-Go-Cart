@@ -1,7 +1,7 @@
 #pragma once
 
-const int eGearPin = 36;
-const int RPMPin = 33;
+const int eGearPin = 33;
+const int RPMPin = 32;
 const int voltPin = 18;
 
 // Motor related pins

@@ -5,7 +5,7 @@
 LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 
 #define EBRAKE_THRESHOLD 0
-#define HALL_THRESHOLD 100.0
+#define HALL_THRESHOLD 100
 
 byte readAnalogESP(int pin){
     return map(analogRead(pin), 0, 4095, 0, 255);
@@ -66,7 +66,7 @@ void loop() {
     lcd.clear();
     lcd.print("RPM:");
     lcd.setCursor(4, 0);
-    lcd.print(RPMSense(digitalRead(RPMPin)));
+    lcd.print(RPMSense());
     lcd.setCursor(9, 0);
     lcd.print("TT:");
     lcd.setCursor(12, 0);
@@ -87,15 +87,15 @@ void rotor() {
     // runs the rotor
 }
 
-int RPMSense(int val) {
-    float hall_count = 1.0;
-    float start = micros();
+int RPMSense() {
+    int hall_count = 1;
+    int start = micros();
     bool on_state = false;
     while(true){
-        if (val == LOW){
+        if (digitalRead(RPMPin) == LOW){
             if (on_state==false){
                 on_state = true;
-                hall_count+=1.0;
+                hall_count+=1;
             }
         } 
         else{
@@ -105,7 +105,7 @@ int RPMSense(int val) {
             break;
         }
     }
-    float end_time = micros();
+    int end_time = micros();
     float time_passed = ((end_time-start)/1000000.0);
     float rpm_val = (hall_count/time_passed)*60.0;
     int RPM = int(rpm_val);
