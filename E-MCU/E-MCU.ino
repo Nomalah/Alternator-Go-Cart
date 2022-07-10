@@ -62,23 +62,25 @@ void loop() {
     // Send msg to M-MCU
     Serial.write((byte*)(&msg), sizeof(message));
 
-    // Print info on LCD Display
+    // Print info on LCD
     lcd.clear();
+    lcd.setCursor(0, 0);
     lcd.print("RPM:");
-    lcd.setCursor(4, 0);
-    lcd.print(RPMSense());
     lcd.setCursor(9, 0);
     lcd.print("TT:");
-    lcd.setCursor(12, 0);
-    lcd.print(throttleStat);
     lcd.setCursor(0, 1);
-    lcd.print("Rtr:");
-    lcd.setCursor(4, 1);
-    lcd.print(1234);
+    lcd.print("RtV:");
     lcd.setCursor(9, 1);
     lcd.print("BV:");
+    lcd.setCursor(12, 0);
+    lcd.print(throttleStat);
+    lcd.setCursor(4, 1);
+    lcd.print(1234);
     lcd.setCursor(12, 1);
-    lcd.print(refVolt);
+    lcd.print(12);
+    lcd.print("V");
+    lcd.setCursor(4, 0);
+    lcd.print(RPMSense());
     Serial.println(" ");
     delay(500);
 }
