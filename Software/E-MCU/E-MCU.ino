@@ -7,6 +7,12 @@ LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 #define EBRAKE_THRESHOLD 0
 #define HALL_THRESHOLD 100
 
+bool next = false;
+long time;
+long prevTime;
+long lastTime;
+int taken;
+
 byte readAnalogESP(int pin) {
     return map(analogRead(pin), 0, 4095, 0, 255);
 }
@@ -21,7 +27,7 @@ void setup() {
     pinMode(rotorPin1, OUTPUT);
     pinMode(rotorPin2, OUTPUT);
     // pinMode(lights, OUTPUT);
-    attachInterrupt(digitalPinToInterrupt(RPMPin), RPMISR, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(RPMPin), RPMISR, FALLING);
     lcd.begin(16, 2);
     Serial.begin(115200);
 }
@@ -92,18 +98,29 @@ void loop() {
     lcd.print("V");
 
     lcd.setCursor(4, 0);
-    lcd.print(RPMSense());
+    RPM();
+    RPMISR();
 
     Serial.println();
-    delay(500);
 }
 
 void RPM() {
-    
+    if (next == true) {
+        prevTime = lastTime;
+        noInterrupts();
+        lastTime = time;
+        next = false;
+        interrupts();
+        taken = lastTime - prevTime;
+        int val = 3000000/taken;
+        Serial.println(val);
+        lcd.print(val);
+    }
 }
 
 void RPMISR() {
-    // ISR code for RPM sensings
+    time = micros();
+    next = true;
 }
 
 // old rpm stuff below
