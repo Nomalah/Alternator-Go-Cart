@@ -15,8 +15,8 @@ const int rearBrakePin = 35;
 #define LCD_EN 23
 #define LCD_D4 22   
 #define LCD_D5 21
-#define LCD_D6 17
-#define LCD_D7 16
+#define LCD_D6 18
+#define LCD_D7 4
 
 // placeholder pins
 const int currentInPin1 = 34;
