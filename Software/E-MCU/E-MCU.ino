@@ -8,7 +8,7 @@ LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 #define HALL_THRESHOLD 100
 
 bool next = false;
-long time;
+long times;
 long prevTime;
 long lastTime;
 int taken;
@@ -50,12 +50,14 @@ void loop() {
         msg.ebrake = false;
         msg.throttle = 0;
         // digitalWrite(lights, HIGH);
-    } else if (eBrakeStat > EBRAKE_THRESHOLD) {
+    } 
+    else if (eBrakeStat > EBRAKE_THRESHOLD) {
         Serial.println("E-Brake Engaged");
         msg.reverse = false;
         msg.ebrake = true;
         msg.throttle = eBrakeStat;
-    } else {
+    } 
+    else {
         Serial.println("Normal operation");
         msg.reverse = digitalRead(reversePin) == HIGH;
         msg.ebrake = false;
@@ -99,7 +101,6 @@ void loop() {
 
     lcd.setCursor(4, 0);
     RPM();
-    RPMISR();
 
     Serial.println();
 }
@@ -108,48 +109,28 @@ void RPM() {
     if (next == true) {
         prevTime = lastTime;
         noInterrupts();
-        lastTime = time;
+        lastTime = times;
         next = false;
         interrupts();
-        taken = lastTime - prevTime;
-        int val = 3000000/taken;
+        taken = lastTime - prevTime - 100000;
+        int val = 30000000/taken;
+        Serial.println(taken);
+        Serial.println();
         Serial.println(val);
         lcd.print(val);
+        delay(100);
     }
 }
 
 void RPMISR() {
-    time = micros();
+    times = micros();
     next = true;
 }
 
-// old rpm stuff below
-int RPMSense() {
-    int hall_count = 1;
-    int start = micros();
-    bool on_state = false;
-    while(true){
-        if (digitalRead(RPMPin) == LOW){
-            if (on_state==false){
-                on_state = true;
-                hall_count+=1;
-            }
-        } 
-        else{
-            on_state = false;
-        }
-        if (hall_count>=HALL_THRESHOLD){
-            break;
-        }
-    }
-    int end_time = micros();
-    float time_passed = ((end_time-start)/1000000.0);
-    float rpm_val = (hall_count/time_passed)*60.0;
-    int RPM = int(rpm_val);
-    Serial.println("RPM:");
-    Serial.println(RPM);
-    return RPM;
-}
+/* old RPM math in case something wrong with new math
+float time_passed = ((end_time-start)/1000000.0);
+float rpm_val = (hall_count/time_passed)*60.0; */
+
 
 // don't know if the code below will work; something seems off about it
 int current() {
@@ -158,9 +139,9 @@ int current() {
     Serial.println("Current values:");
     for (byte pin=0; pin<=7; pin++) {
         selectMuxPin(pin);
-        Serial.println(String(pin + 1) + ". ");
+        Serial.println(pin + 1);
         int inputValue = current1;
-        Serial.print(inputValue);
+        Serial.print("-" + String(inputValue));
     }
 }
 
