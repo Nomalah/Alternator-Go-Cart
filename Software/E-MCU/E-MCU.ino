@@ -17,6 +17,11 @@ byte readAnalogESP(int pin) {
     return map(analogRead(pin), 0, 4095, 0, 255);
 }
 
+void RPMISR() {
+    times = micros();
+    next = true;
+}
+
 void setup() {
     pinMode(RPMPin, INPUT);
     pinMode(reversePin, INPUT);
@@ -35,10 +40,12 @@ void setup() {
 void loop() {
     // int eGearStat = analogRead(eGearPin); --> may not be used
     // small note, likely will have to do some math with refVolt to get the correct voltage reading
-    // something like int refVolt = (analogRead(voltPin) * x)/4096
-    int refVolt = analogRead(voltPin);
+    float refVolt = ((analogRead(voltPin) * 3.3)/4096) * 13;
     int throttleStat = readAnalogESP(throttlePin);
     int eBrakeStat = readAnalogESP(eBrakePin);
+
+    Serial.println("Reference voltage: ");
+    Serial.print(refVolt);
 
     message msg;
 
@@ -76,32 +83,23 @@ void loop() {
 
     // Print info on LCD
     lcd.clear();
-
     lcd.setCursor(0, 0);
     lcd.print("RPM:");
-
     lcd.setCursor(9, 0);
     lcd.print("TT:");
-
     lcd.setCursor(0, 1);
-    lcd.print("RtV:");
-
-    lcd.setCursor(9, 1);
     lcd.print("BV:");
-
+    lcd.setCursor(9, 1);
+    lcd.print("RtV:");
     lcd.setCursor(12, 0);
     lcd.print(throttleStat);
-
     lcd.setCursor(4, 1);
-    lcd.print(1234); // placeholder
-
-    lcd.setCursor(12, 1);
-    lcd.print(12); // placeholder
+    lcd.print(refVolt);
     lcd.print("V");
-
+    lcd.setCursor(12, 1);
+    lcd.print(1234); // placeholder
     lcd.setCursor(4, 0);
     RPM();
-
     Serial.println();
 }
 
@@ -122,30 +120,20 @@ void RPM() {
     }
 }
 
-void RPMISR() {
-    times = micros();
-    next = true;
-}
-
-/* old RPM math in case something wrong with new math
-float time_passed = ((end_time-start)/1000000.0);
-float rpm_val = (hall_count/time_passed)*60.0; */
-
-
 // don't know if the code below will work; something seems off about it
 int current() {
     int current1 = analogRead(currentInPin1);
     int current2 = analogRead(currentInPin2);
     Serial.println("Current values:");
     for (byte pin=0; pin<=7; pin++) {
-        selectMuxPin(pin);
+        multiplexerCycle(pin);
         Serial.println(pin + 1);
         int inputValue = current1;
         Serial.print("-" + String(inputValue));
     }
 }
 
-void selectMuxPin(byte pin)
+void multiplexerCycle(byte pin)
 {
     for (int i=0; i<3; i++){
         if (pin & (1<<i))
@@ -155,10 +143,14 @@ void selectMuxPin(byte pin)
     }
 }
 
+// incomplete code below
 void rotor() {
-    // runs the rotor
+    int voltage = eGear();
+    
 }
 
-void eGear(int val) {
-    // information about the volts it should run on rotor
+int eGear() {
+    // calculates the volts the rotor should run
+    int val;
+    return val;
 }
