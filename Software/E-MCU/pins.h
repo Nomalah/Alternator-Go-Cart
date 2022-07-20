@@ -1,8 +1,8 @@
 #pragma once
 
 const int eGearPin = 33;
-const int RPMPin = 32;
-const int voltPin = 18;
+const int RPMPin = 33;
+const int voltPin = 26;
 
 // Motor related pins
 const int reversePin = 34;
@@ -22,8 +22,8 @@ const int rearBrakePin = 35;
 const int currentInPin1 = 34;
 const int currentInPin2 = 35;
 const int currentOutPins[3] = {2, 4, 5};
-const int rotorPin1 = 25;
-const int rotorPin2 = 26;
+const int rotorPinPWM = 14;
+const int rotorPinEN = 26;
 
 // in case want brake lights; only use if have enough pins left
-//const int lights = 4;
+//const int lights = 25;

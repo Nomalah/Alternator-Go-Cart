@@ -1,8 +1,10 @@
 #include "pins.h"
 #include "../message.h"
 #include <LiquidCrystal.h>
+#include <ESP32Servo.h>
 
 LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
+Servo servo;
 
 #define EBRAKE_THRESHOLD 0
 #define HALL_THRESHOLD 100
@@ -23,29 +25,31 @@ void RPMISR() {
 }
 
 void setup() {
+    Serial.begin(115200);
     pinMode(RPMPin, INPUT);
     pinMode(reversePin, INPUT);
     pinMode(rearBrakePin, INPUT);
     pinMode(currentOutPins[0], OUTPUT);
     pinMode(currentOutPins[1], OUTPUT);
     pinMode(currentOutPins[2], OUTPUT);
-    pinMode(rotorPin1, OUTPUT);
-    pinMode(rotorPin2, OUTPUT);
+    pinMode(rotorPinPWM, OUTPUT);
+    pinMode(rotorPinEN, OUTPUT);
     // pinMode(lights, OUTPUT);
     attachInterrupt(digitalPinToInterrupt(RPMPin), RPMISR, FALLING);
     lcd.begin(16, 2);
-    Serial.begin(115200);
+    servo.attach(9);
+    servo.writeMicroseconds(1500);
+    delay(1000);
 }
 
 void loop() {
-    // int eGearStat = analogRead(eGearPin); --> may not be used
-    // small note, likely will have to do some math with refVolt to get the correct voltage reading
+    int eGearStat = analogRead(eGearPin); // may not be used, but is placeholder
     float refVolt = ((analogRead(voltPin) * 3.3)/4096) * 13;
     int throttleStat = readAnalogESP(throttlePin);
     int eBrakeStat = readAnalogESP(eBrakePin);
-
     Serial.println("Reference voltage: ");
     Serial.print(refVolt);
+    Serial.print("V");
 
     message msg;
 
@@ -81,6 +85,10 @@ void loop() {
     // Current sensing
     Serial.println(current());
 
+    // Run the rotor
+    int rV = map(eGearStat, 0, 1023, 21, 149); // placeholder until eGear code figured out
+    rotor(rV, throttleStat);
+
     // Print info on LCD
     lcd.clear();
     lcd.setCursor(0, 0);
@@ -97,9 +105,9 @@ void loop() {
     lcd.print(refVolt);
     lcd.print("V");
     lcd.setCursor(12, 1);
-    lcd.print(1234); // placeholder
+    lcd.print(rV); // placeholder
     lcd.setCursor(4, 0);
-    RPM();
+    RPM(); // RPM lcd print is in this function
     Serial.println();
 }
 
@@ -144,9 +152,14 @@ void multiplexerCycle(byte pin)
 }
 
 // incomplete code below
-void rotor() {
-    int voltage = eGear();
-    
+void rotor(int val, int throttle) {
+    analogWrite(rotorPinPWM, val);
+    digitalWrite(rotorPinEN, throttle > 250);
+    servo.writeMicroseconds(throttle);
+    /* code from original go kart
+    analogWrite(11, actualGear); // this was rotor pwm
+    digitalWrite(6, outputThrottle > 1490);
+    servo.writeMicroseconds(outputThrottle);*/
 }
 
 int eGear() {
