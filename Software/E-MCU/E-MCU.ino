@@ -43,6 +43,7 @@ void setup() {
 }
 
 void loop() {
+    // section 1 - pin setups - no need to move/cannot move
     int eGearStat = analogRead(eGearPin); // may not be used, but is placeholder
     float refVolt = ((analogRead(voltPin) * 3.3)/4096) * 13;
     int throttleStat = readAnalogESP(throttlePin);
@@ -51,6 +52,22 @@ void loop() {
     Serial.print(refVolt);
     Serial.print("V");
 
+    // section 2 - M-MCU comms - moved
+    mmcu(eBrakeStat, throttleStat);
+
+    // section 3 - current sensing - in progress, no move for now
+    Serial.println(current());
+
+    // section 4 - run the rotor - already moved
+    int rV = map(eGearStat, 0, 1023, 21, 149); // placeholder until eGear code figured out
+    rotor(rV, throttleStat);
+
+    // section 5 - lcd display driver
+    display(throttleStat, refVolt, rV);
+}
+
+// section 2
+void mmcu(int eBrakeStat, int throttleStat) {
     message msg;
 
     // digitalWrite(lights, LOW);
@@ -79,17 +96,11 @@ void loop() {
     Serial.println(msg.ebrake);
     Serial.println(int(msg.throttle));
 
-    // Send msg to M-MCU
     Serial.write((byte*)(&msg), sizeof(message));
+}
 
-    // Current sensing
-    Serial.println(current());
-
-    // Run the rotor
-    int rV = map(eGearStat, 0, 1023, 21, 149); // placeholder until eGear code figured out
-    rotor(rV, throttleStat);
-
-    // Print info on LCD
+// section 5
+void display(int throttleStat, int refVolt, int rV){
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("RPM:");
@@ -105,7 +116,7 @@ void loop() {
     lcd.print(refVolt);
     lcd.print("V");
     lcd.setCursor(12, 1);
-    lcd.print(rV); // placeholder
+    lcd.print(rV);
     lcd.setCursor(4, 0);
     RPM(); // RPM lcd print is in this function
     Serial.println();
